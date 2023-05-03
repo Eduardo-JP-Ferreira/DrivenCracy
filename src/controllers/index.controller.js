@@ -1,4 +1,5 @@
 import { db } from "../database/connection.js"
+import { ObjectId } from "mongodb"
 
 export async function postPoll(req, res) {
     const {title, expireAt} = req.body
@@ -36,11 +37,11 @@ export async function getPoll(req, res) {
 
 export async function postChoice(req, res) {
     const {title, pollId} = req.body
-    const _id = pollId
+
     try{      
-        const verifyPoll = await db.collection("poll").findOne({ _id: pollId})
+        const verifyPoll = await db.collection("poll").findOne({_id: new ObjectId(pollId)})
         if(!verifyPoll){
-            res.status(404).send(pollId)
+            res.status(404).send("Enquete Inexistente")
         }
         else{
             const verifyTitle= await db.collection("choice").findOne({title})
@@ -55,19 +56,26 @@ export async function postChoice(req, res) {
             else{
                 res.send(409)
             }
-  
-        }       
-        
+        }        
     }catch (err){
         res.status(500).send(err.message)
-        }
+    }
 }
 export async function getChoice(req, res) {
     const id= req.params.id; 
 
-    const list = await db.collection("choice").find({pollId: id}).toArray()
-    .then((list) => res.status(200).send(list))
-    .catch((err) => res.status(404).send(err.message))
+    try {
+        const verifyPoll = await db.collection("poll").findOne({_id: new ObjectId(id)})
+        if(!verifyPoll){
+            res.status(404).send("Enquete Inexistente")
+        }
+
+        const list = await db.collection("choice").find({pollId: id}).toArray()
+        .then((list) => res.status(200).send(list))
+        .catch((err) => res.status(404).send(err.message))
+    } catch (err) {
+        res.status(500).send(err.message)
+    }   
 }
 
 export async function postVote(req, res) {

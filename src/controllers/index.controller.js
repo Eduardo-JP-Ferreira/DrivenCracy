@@ -49,7 +49,7 @@ export async function postChoice(req, res) {
 
             if(date>verifyPoll.expireAt){
                 // console.log("expirou")
-                res.status(403).send("Esta enquete já expirou")
+                res.status(403).send("Esta Enquete já Expirou")
             }
             else{
                 // console.log("OK")
@@ -151,9 +151,7 @@ export async function getResult(req, res) {
                 arrayVote.push(listVote.length)
             }
             const max = Math.max(...arrayVote);
-            // res.send(String(max))
-            // const index = arrayVote.indexOf(max)
-            // res.send(index)
+
             for(let i=0; i<arrayVote.length;i++){
                 if(arrayVote[i]===max){
                     const resultObject = {
@@ -165,14 +163,11 @@ export async function getResult(req, res) {
                             votes: max
                         }
                     }
-
                     arrayFinal.push(resultObject)
                 }
             }
-            
             res.send(arrayFinal)
         }
-
     } catch (err) {
         res.status(500).send(err.message)
     }

@@ -136,6 +136,7 @@ export async function getVote(req, res) {
 export async function getResult(req, res) {
     const id= req.params.id; 
     const arrayVote = []
+    const arrayFinal=[]
     try {
         const verifyPoll = await db.collection("poll").findOne({_id: new ObjectId(id)})
         if(!verifyPoll){
@@ -143,30 +144,33 @@ export async function getResult(req, res) {
         }
         else{
             const listChoices = await db.collection("choice").find({pollId: id}).toArray()
-            // const tam = String(listChoices.length)
-            // res.send(listChoices)
+
             for(let i=0; i<listChoices.length;i++){
                 let choiceId= listChoices[i]._id
-                // const listVote = await db.collection("votes").find({choiceId: new ObjectId(name)}).toArray()
                 const listVote = await db.collection("votes").find({choiceId: String(choiceId)}).toArray()
-                // const listVote = await db.collection("votes").find({choiceId: "6453a1f503099046822482e6"}).toArray()
                 arrayVote.push(listVote.length)
             }
             const max = Math.max(...arrayVote);
             // res.send(String(max))
-            const index = arrayVote.indexOf(max)
+            // const index = arrayVote.indexOf(max)
             // res.send(index)
+            for(let i=0; i<arrayVote.length;i++){
+                if(arrayVote[i]===max){
+                    const resultObject = {
+                        _id: verifyPoll._id,
+                        title: verifyPoll.title,
+                        expireAt: verifyPoll.expireAt,
+                        result:{
+                            title: listChoices[i].title,
+                            votes: max
+                        }
+                    }
 
-            const resultObject = {
-                _id: verifyPoll._id,
-                title: verifyPoll.title,
-                expireAt: verifyPoll.expireAt,
-                result:{
-                    title: listChoices[index].title,
-                    votes: max
+                    arrayFinal.push(resultObject)
                 }
             }
-            res.send(resultObject)
+            
+            res.send(arrayFinal)
         }
 
     } catch (err) {
